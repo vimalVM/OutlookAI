@@ -1,0 +1,136 @@
+{
+  "domain": "Frontend Development",
+  "type": "technical",
+  "questions": [
+    {
+      "id": "fe-001",
+      "question": "Explain the difference between virtual DOM and real DOM.",
+      "ideal_answer": "The real DOM is the actual HTML structure of the page rendered by the browser. Manipulating it directly is slow because any change triggers reflow and repaint. The virtual DOM is a lightweight JavaScript representation of the real DOM. Frameworks like React use it to batch changes: they compare the new virtual DOM with the previous one (diffing), compute the minimal set of changes needed, and then apply only those changes to the real DOM (reconciliation). This makes updates more efficient.",
+      "key_points": [
+        "Real DOM is the browser's actual HTML tree",
+        "Direct DOM manipulation is expensive (reflow/repaint)",
+        "Virtual DOM is a JS object representation",
+        "Diffing algorithm compares old and new virtual DOM",
+        "Reconciliation applies minimal changes to real DOM",
+        "Improves performance through batched updates"
+      ]
+    },
+    {
+      "id": "fe-002",
+      "question": "What is the event loop in JavaScript and why is it important?",
+      "ideal_answer": "JavaScript is single-threaded, meaning it has one call stack. The event loop is the mechanism that allows JavaScript to perform non-blocking operations despite being single-threaded. It works by offloading I/O operations to the browser/Node.js APIs, which place callbacks into a task queue (or microtask queue for Promises) when complete. The event loop continuously checks if the call stack is empty and then moves tasks from the queue to the call stack. This enables asynchronous behavior like setTimeout, fetch, and event handlers without blocking the main thread.",
+      "key_points": [
+        "JavaScript is single-threaded with one call stack",
+        "Event loop enables non-blocking asynchronous operations",
+        "I/O operations are offloaded to browser/runtime APIs",
+        "Callbacks are placed in task queue when complete",
+        "Microtask queue has higher priority (Promises)",
+        "Event loop checks if call stack is empty before dequeuing"
+      ]
+    },
+    {
+      "id": "fe-003",
+      "question": "How does CSS specificity work?",
+      "ideal_answer": "CSS specificity determines which styles are applied when multiple rules target the same element. It's calculated as a four-part value: inline styles (highest), IDs, classes/attributes/pseudo-classes, and elements/pseudo-elements. Inline styles override everything except !important. IDs are more specific than classes, and classes are more specific than element selectors. When specificity is equal, the last rule in source order wins. The !important declaration overrides all specificity rules, but should be used sparingly.",
+      "key_points": [
+        "Specificity determines which conflicting CSS rules apply",
+        "Calculated as a hierarchy: inline > ID > class > element",
+        "Inline styles have highest specificity",
+        "When specificity is equal, source order wins (last wins)",
+        "!important overrides normal specificity",
+        "Should be used sparingly to maintain maintainable CSS"
+      ]
+    },
+    {
+      "id": "fe-004",
+      "question": "Explain closures in JavaScript with an example.",
+      "ideal_answer": "A closure is a function that retains access to its lexical scope's variables even after the outer function has finished executing. When a function is created inside another function, it 'closes over' the outer function's variables, keeping them in memory. This is useful for data privacy (module pattern), callbacks, and creating function factories. For example, a counter function that returns an increment function: the inner function remembers the count variable even after the outer function returns.",
+      "key_points": [
+        "Closure is a function with access to its outer scope's variables",
+        "Variables are retained even after outer function returns",
+        "Created when inner function references outer scope variables",
+        "Useful for data privacy and encapsulation",
+        "Common in callbacks and event handlers",
+        "Example: counter/function factory pattern"
+      ]
+    },
+    {
+      "id": "fe-005",
+      "question": "What are Web Vitals and why do they matter?",
+      "ideal_answer": "Web Vitals are a set of metrics defined by Google that measure real-world user experience on the web. The Core Web Vitals are: LCP (Largest Contentful Paint) measuring loading performance — should be under 2.5 seconds; FID (First Input Delay) or INP (Interaction to Next Paint) measuring interactivity — should be under 100ms/200ms; and CLS (Cumulative Layout Shift) measuring visual stability — should be under 0.1. They matter because they directly impact user experience and are ranking factors for Google Search. Optimizing them involves lazy loading, code splitting, font optimization, and layout stability techniques.",
+      "key_points": [
+        "Google-defined metrics for real-world user experience",
+        "LCP measures loading performance (target: <2.5s)",
+        "FID/INP measures interactivity responsiveness",
+        "CLS measures visual stability (target: <0.1)",
+        "Impact Google Search rankings (SEO)",
+        "Optimization through lazy loading, code splitting, layout stability"
+      ]
+    },
+    {
+      "id": "fe-006",
+      "question": "Explain the concepts of debouncing and throttling.",
+      "ideal_answer": "Debouncing and throttling are techniques to optimize the execution of frequently firing events, like scrolling or resizing. Debouncing delays the execution of a function until a certain amount of time has passed since the last time it was invoked (e.g., only search when the user stops typing). Throttling ensures a function is executed at most once every specified time interval, regardless of how many times the event fires (e.g., updating a scroll position indicator every 100ms). Both improve performance by reducing unnecessary function calls.",
+      "key_points": [
+        "Techniques for optimizing frequent event handlers",
+        "Debouncing waits for a pause in events before executing",
+        "Throttling limits execution to a set time interval",
+        "Improves performance and prevents excessive API calls",
+        "Debounce example: search input",
+        "Throttle example: scroll or resize events"
+      ]
+    },
+    {
+      "id": "fe-007",
+      "question": "What is Cross-Origin Resource Sharing (CORS) and how does it work?",
+      "ideal_answer": "CORS is a security mechanism implemented by browsers that restricts web applications from making requests to a different domain than the one that served the application. It prevents malicious scripts from accessing sensitive data on other domains. When an app makes a cross-origin request, the browser first sends a preflight OPTIONS request to check if the server allows it via specific headers (Access-Control-Allow-Origin). If the server responds with the correct headers, the actual request is sent. Developers must configure their backends to send proper CORS headers.",
+      "key_points": [
+        "Security mechanism enforced by web browsers",
+        "Prevents unauthorized requests to different domains",
+        "Protects user data from malicious scripts",
+        "Uses preflight OPTIONS requests for verification",
+        "Server must respond with Access-Control-Allow-Origin headers",
+        "Essential for API integrations across different origins"
+      ]
+    },
+    {
+      "id": "fe-008",
+      "question": "What is the difference between let, const, and var in JavaScript?",
+      "ideal_answer": "var is function-scoped and can be re-declared and updated; it also exhibits hoisting where the declaration (but not initialization) is moved to the top of the scope. let is block-scoped (scoped to the nearest curly braces), can be updated but not re-declared in the same scope, and is not initialized when hoisted (temporal dead zone). const is also block-scoped and hoisted like let, but it cannot be updated or re-declared. However, the properties of objects or arrays declared with const can still be modified.",
+      "key_points": [
+        "var is function-scoped, let and const are block-scoped",
+        "var can be re-declared, let and const cannot",
+        "const cannot be reassigned (but objects are mutable)",
+        "var is hoisted and initialized as undefined",
+        "let and const are hoisted but remain in temporal dead zone",
+        "Modern JS prefers let and const over var"
+      ]
+    },
+    {
+      "id": "fe-009",
+      "question": "Explain the concept of Semantic HTML and why it is important.",
+      "ideal_answer": "Semantic HTML means using HTML elements according to their intended meaning and purpose, rather than just for presentation. For example, using <header>, <nav>, <main>, <article>, and <footer> instead of generic <div> tags. It is important for several reasons: it improves accessibility (screen readers can understand the document structure), enhances SEO (search engines can index content better), and makes the code more readable and maintainable for developers.",
+      "key_points": [
+        "Using HTML elements for their meaning, not just styling",
+        "Examples: <header>, <article>, <nav>, <section>",
+        "Improves accessibility for screen readers and assistive tech",
+        "Enhances Search Engine Optimization (SEO)",
+        "Makes codebase more readable and maintainable",
+        "Separates content structure from visual presentation"
+      ]
+    },
+    {
+      "id": "fe-010",
+      "question": "How does React state differ from props?",
+      "ideal_answer": "Props (short for properties) are used to pass data from a parent component to a child component. They are read-only and cannot be modified by the receiving component. State, on the other hand, is managed within the component itself and is used to store data that can change over time, usually in response to user actions or network requests. When a component's state changes, React re-renders that component and its children. While a component cannot change its props, a parent can change the props it passes down by updating its own state.",
+      "key_points": [
+        "Props pass data from parent to child components",
+        "Props are immutable (read-only) for the receiving component",
+        "State is managed internally within a component",
+        "State is mutable and changes trigger re-renders",
+        "State handles dynamic data (user input, API responses)",
+        "Parent state changes can flow down as new props"
+      ]
+    }
+  ]
+}

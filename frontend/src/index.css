@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-body-md m-0 p-0 antialiased h-screen overflow-hidden;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-surface-container border border-outline/30;
+  }
+  
+  .glass-input {
+    @apply bg-surface border border-outline/30 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none rounded text-on-surface;
+  }
+
+  .gold-gradient {
+    /* Kept for potential highlights, but using brand primary where applicable */
+    background: linear-gradient(135deg, #e8a33d 0%, #ffc16c 100%);
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(232, 163, 61, 0.15);
+  }
+  
+  .gold-glow-hover:hover {
+    box-shadow: 0 0 20px rgba(232, 163, 61, 0.3);
+  }
+}

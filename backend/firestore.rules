@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sessions collection
+    match /sessions/{sessionId} {
+      // Users can only read their own session documents
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      
+      // All writes are handled securely by the backend via Firebase Admin SDK,
+      // which bypasses these rules. Direct client writes are rejected.
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "domain": "Behavioral",
+  "type": "non_technical",
+  "questions": [
+    {
+      "id": "bh-001",
+      "question": "Tell me about a time you had to deal with a difficult team member.",
+      "ideal_answer": "Use the STAR method: describe the Situation (team project context), Task (what needed to be accomplished), Action (how you addressed the difficulty — active listening, finding common ground, adjusting communication style, involving a manager if needed), and Result (how the outcome improved, what you learned). Focus on empathy, professionalism, and constructive conflict resolution rather than blaming the other person.",
+      "key_points": [
+        "Uses STAR method or similar structured approach",
+        "Describes a specific, real situation",
+        "Shows empathy and understanding of the other person's perspective",
+        "Demonstrates constructive conflict resolution actions",
+        "Focuses on professional behavior, not blaming",
+        "Describes a positive or learning outcome"
+      ]
+    },
+    {
+      "id": "bh-002",
+      "question": "Describe a situation where you failed and what you learned from it.",
+      "ideal_answer": "Share a genuine failure (not a humble-brag). Describe what happened honestly, take ownership without excessive blame on external factors, explain what specific lessons you drew from it, and describe how you applied those lessons going forward. The key is demonstrating self-awareness, resilience, a growth mindset, and the ability to turn setbacks into improvements.",
+      "key_points": [
+        "Shares a genuine failure, not a disguised success",
+        "Takes ownership and accountability",
+        "Shows self-awareness about what went wrong",
+        "Describes specific lessons learned",
+        "Explains how behavior or approach changed afterward",
+        "Demonstrates growth mindset and resilience"
+      ]
+    },
+    {
+      "id": "bh-003",
+      "question": "How do you prioritize when you have multiple urgent deadlines?",
+      "ideal_answer": "Explain your prioritization framework: assess urgency vs. importance (Eisenhower matrix or similar), communicate with stakeholders to understand true deadlines and negotiate where possible, break down tasks into smaller deliverables, delegate when appropriate, and timebox work to avoid perfectionism on lower-priority items. Mention specific tools or methods you use (to-do lists, project management tools). Show that you remain calm under pressure and make rational decisions rather than panicking.",
+      "key_points": [
+        "Has a clear prioritization framework (urgency vs importance)",
+        "Communicates proactively with stakeholders",
+        "Breaks down large tasks into manageable pieces",
+        "Willing to delegate or ask for help",
+        "Uses concrete tools or methods",
+        "Stays calm and rational under pressure"
+      ]
+    },
+    {
+      "id": "bh-004",
+      "question": "Why are you interested in this role, and what makes you a good fit?",
+      "ideal_answer": "Demonstrate research about the company and role: reference specific aspects of the company's mission, products, culture, or recent achievements. Connect your skills and experience to the role's requirements with concrete examples. Show enthusiasm that goes beyond generic statements — explain why this particular opportunity excites you. Mention both what you'll contribute and what you hope to grow into.",
+      "key_points": [
+        "Shows specific knowledge about the company/role",
+        "Connects personal skills to role requirements",
+        "Provides concrete examples of relevant experience",
+        "Demonstrates genuine enthusiasm beyond generic interest",
+        "Balances what they'll contribute with growth aspirations",
+        "Avoids purely self-serving motivations (just salary, prestige)"
+      ]
+    },
+    {
+      "id": "bh-005",
+      "question": "Tell me about a time you took initiative beyond your defined responsibilities.",
+      "ideal_answer": "Describe a specific situation where you identified a gap, opportunity, or problem that wasn't technically your responsibility and took proactive steps to address it. Explain your reasoning for stepping up, how you approached it, what the outcome was, and how it benefited the team or organization. Show that you balance initiative with collaboration — you didn't step on toes or act recklessly, but contributed constructively.",
+      "key_points": [
+        "Identifies a specific situation with a gap or opportunity",
+        "Took proactive action beyond job description",
+        "Explains reasoning and thought process",
+        "Balanced initiative with collaboration and respect",
+        "Describes measurable or meaningful positive outcome",
+        "Shows pattern of ownership mentality"
+      ]
+    },
+    {
+      "id": "bh-006",
+      "question": "Describe a time when you received constructive criticism. How did you handle it?",
+      "ideal_answer": "Share a specific instance of receiving critical feedback. Focus on your reaction: remaining open, listening actively without being defensive, and asking clarifying questions. Explain the actionable steps you took to improve based on the feedback and the subsequent positive results. The goal is to show coachability, humility, and a continuous improvement mindset.",
+      "key_points": [
+        "Provides a real example of constructive criticism",
+        "Demonstrates active listening and non-defensive attitude",
+        "Shows appreciation for feedback",
+        "Details specific actions taken to improve",
+        "Highlights positive results from the change",
+        "Exhibits coachability and humility"
+      ]
+    },
+    {
+      "id": "bh-007",
+      "question": "Tell me about a time you had to adapt to a significant change at work.",
+      "ideal_answer": "Describe a major change (e.g., leadership transition, project pivot, new technology stack). Use the STAR method to explain how you initially processed the change, how you adapted your working style or learned new skills, and how you helped others navigate the transition. Emphasize flexibility, maintaining a positive attitude, and a focus on keeping productivity high during uncertainty.",
+      "key_points": [
+        "Describes a substantial organizational or project change",
+        "Shows adaptability and flexibility",
+        "Maintained a positive, constructive attitude",
+        "Took concrete steps to learn or adjust",
+        "Helped team members navigate the change",
+        "Ensured project continuity and success"
+      ]
+    },
+    {
+      "id": "bh-008",
+      "question": "Can you share an example of a time you disagreed with a manager or colleague? How did you resolve it?",
+      "ideal_answer": "Provide a scenario involving a professional disagreement (e.g., technical approach, strategy). Explain how you handled it respectfully: scheduling a private conversation, seeking to understand their perspective, presenting your case with data or logic, and ultimately reaching a compromise or committing to a decision. Highlight your ability to 'disagree and commit' if things didn't go your way, and your focus on the team's goals over ego.",
+      "key_points": [
+        "Shares a professional, not personal, disagreement",
+        "Approached the conversation respectfully and privately",
+        "Used data, logic, or clear reasoning to present their side",
+        "Actively listened to the opposing perspective",
+        "Reached a compromise or 'disagreed and committed'",
+        "Prioritized team success over personal ego"
+      ]
+    },
+    {
+      "id": "bh-009",
+      "question": "Describe a time when you had to learn a new skill or technology quickly.",
+      "ideal_answer": "Detail a situation where you were thrown into a project requiring unfamiliar tools. Explain your learning strategy: consulting documentation, seeking out mentors, breaking the learning into manageable chunks, and applying the knowledge immediately. Discuss the outcome and how your quick learning positively impacted the project's timeline or quality. Shows resourcefulness and a fast learning curve.",
+      "key_points": [
+        "Describes a clear need for rapid learning",
+        "Outlines a structured learning strategy",
+        "Demonstrates resourcefulness (docs, peers, tutorials)",
+        "Applied new knowledge effectively to the task",
+        "Met or exceeded project expectations",
+        "Shows enthusiasm for continuous learning"
+      ]
+    },
+    {
+      "id": "bh-010",
+      "question": "Tell me about a time you went above and beyond to help a customer or user.",
+      "ideal_answer": "Share a story where you exceeded expectations for an internal or external user. Explain the problem they were facing, why it was critical, and the extra effort you put in to solve it—whether it was staying late, writing extra documentation, or coordinating with other teams. Emphasize your customer-centric mindset and the tangible positive impact your actions had on their satisfaction.",
+      "key_points": [
+        "Identifies a specific user or customer problem",
+        "Demonstrates strong empathy and customer focus",
+        "Took actions clearly outside normal expectations",
+        "Coordinated effectively if other resources were needed",
+        "Achieved a highly positive result for the user",
+        "Shows dedication to product/service quality"
+      ]
+    }
+  ]
+}
