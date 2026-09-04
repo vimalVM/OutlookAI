@@ -1,0 +1,30 @@
+{
+  "domain": "Leadership",
+  "type": "non_technical",
+  "questions": [
+    {
+      "id": "ld-001",
+      "question": "How do you align a cross-functional team around a shared vision?",
+      "ideal_answer": "Establish a clear, compelling vision and tie daily objectives directly to business outcomes. Maintain transparent communication, foster psychological safety, set clear ownership and OKRs/KPIs, and recognize individual and team contributions to maintain momentum.",
+      "key_points": [
+        "Articulates a clear vision and strategic goals",
+        "Connects team members' work to high-level objectives",
+        "Encourages open feedback and psychological safety",
+        "Uses frameworks like OKRs to track progress",
+        "Recognizes and celebrates team wins"
+      ]
+    },
+    {
+      "id": "ld-002",
+      "question": "Describe a time when you had to lead a project through significant ambiguity.",
+      "ideal_answer": "Use STAR method: explain how you gathered available data, framed key assumptions, created incremental milestones, established feedback loops, and empowered team members while staying flexible as new information emerged.",
+      "key_points": [
+        "Identifies key risks and tests core assumptions early",
+        "Breaks down ambiguous goals into actionable steps",
+        "Communicates transparently with team and executives",
+        "Adapts plans flexibly without losing direction",
+        "Demonstrates calm and decisiveness under uncertainty"
+      ]
+    }
+  ]
+}

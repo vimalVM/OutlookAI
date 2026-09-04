@@ -1,81 +1,108 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { Code, BarChart, Server, LayoutTemplate, Users, Zap, Briefcase, Award, Search } from 'lucide-react';
+import { Code, Users, BarChart, Server, LayoutTemplate, Zap, Briefcase, Award, Search, Loader2 } from 'lucide-react';
 
-const TECHNICAL_DOMAINS = [
-  {
-    id: 'frontend-engineering',
+interface DomainItem {
+  id: string;
+  domain: string;
+  type: string;
+  questionCount: number;
+}
+
+const DOMAIN_METADATA: Record<string, { title: string; icon: React.ReactNode; description: string }> = {
+  'frontend-development': {
     title: 'Frontend Eng',
     icon: <Code className="h-5 w-5" />,
-    description: 'Master architecture, state management, an...',
+    description: 'Master React, JavaScript core, web performance, and state management.',
   },
-  {
-    id: 'data-science',
+  'data-science': {
     title: 'Data Science',
     icon: <BarChart className="h-5 w-5" />,
-    description: 'Statistical modeling, machine learnin...',
+    description: 'Statistical modeling, machine learning algorithms, and data insights.',
   },
-  {
-    id: 'system-design',
+  'system-design': {
     title: 'System Design',
     icon: <Server className="h-5 w-5" />,
-    description: 'Scaling distributed systems,...',
+    description: 'Scaling distributed systems, load balancing, databases, and microservices.',
   },
-  {
-    id: 'product-management',
+  'product-management': {
     title: 'Product Mgmt',
     icon: <LayoutTemplate className="h-5 w-5" />,
-    description: 'Roadmapping, cross-functional leadership, and...',
-  }
-];
-
-const BEHAVIORAL_DOMAINS = [
-  {
-    id: 'leadership',
-    title: 'Leadership',
-    icon: <Users className="h-5 w-5" />,
-    description: 'Navigating culture, driving team alignment,...',
+    description: 'Roadmapping, cross-functional leadership, prioritization, and product strategy.',
   },
-  {
-    id: 'conflict-resolution',
+  'behavioral': {
+    title: 'Behavioral',
+    icon: <Users className="h-5 w-5" />,
+    description: 'Master STAR method scenarios, team conflicts, and self-awareness questions.',
+  },
+  'leadership': {
+    title: 'Leadership',
+    icon: <Award className="h-5 w-5" />,
+    description: 'Navigating culture, driving team alignment, vision, and strategic goals.',
+  },
+  'conflict-resolution': {
     title: 'Conflict Res',
     icon: <Zap className="h-5 w-5" />,
-    description: 'Mediating disputes, managing difficu...',
+    description: 'Mediating disputes, managing difficult conversations, and technical stalemates.',
   },
-  {
-    id: 'negotiation',
+  'negotiation': {
     title: 'Negotiation',
     icon: <Briefcase className="h-5 w-5" />,
-    description: 'Strategies for total compensation discussion,...',
+    description: 'Strategies for compensation discussions, scope alignment, and deadlines.',
   },
-  {
-    id: 'first-time-manager',
+  'first-time-manager': {
     title: 'First-time Mgr',
-    icon: <Award className="h-5 w-5" />,
-    description: 'Transitioning from IC, delivering feedback, and...',
-  }
-];
+    icon: <Users className="h-5 w-5" />,
+    description: 'Transitioning from IC, delivering feedback, 1-on-1s, and team growth.',
+  },
+};
 
 export function Dashboard() {
+  const [domains, setDomains] = useState<DomainItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { isDark } = useOutletContext<{ isDark: boolean }>();
 
+  useEffect(() => {
+    api.get('/domains')
+      .then((res) => {
+        setDomains(res.data.domains || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch domains', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const technicalDomains = useMemo(() => {
+    return domains.filter(d => d.type === 'technical' || d.id.includes('tech') || d.id.includes('frontend') || d.id.includes('system') || d.id.includes('data') || d.id.includes('product'));
+  }, [domains]);
+
+  const behavioralDomains = useMemo(() => {
+    return domains.filter(d => d.type === 'non_technical' || d.type === 'behavioral' || d.id === 'behavioral' || d.id.includes('leadership') || d.id.includes('conflict') || d.id.includes('negotiation') || d.id.includes('manager'));
+  }, [domains]);
+
   const filteredTech = useMemo(() => {
-    return TECHNICAL_DOMAINS.filter(d => 
-      d.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      d.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+    return technicalDomains.filter(d => {
+      const meta = DOMAIN_METADATA[d.id];
+      const title = meta ? meta.title : d.domain;
+      const desc = meta ? meta.description : '';
+      return title.toLowerCase().includes(searchQuery.toLowerCase()) || desc.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [technicalDomains, searchQuery]);
 
   const filteredBehavioral = useMemo(() => {
-    return BEHAVIORAL_DOMAINS.filter(d => 
-      d.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      d.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+    return behavioralDomains.filter(d => {
+      const meta = DOMAIN_METADATA[d.id];
+      const title = meta ? meta.title : d.domain;
+      const desc = meta ? meta.description : '';
+      return title.toLowerCase().includes(searchQuery.toLowerCase()) || desc.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [behavioralDomains, searchQuery]);
 
   const handleStartSession = async (domainId: string) => {
     try {
@@ -83,37 +110,54 @@ export function Dashboard() {
       const res = await api.post('/sessions', { domainId });
       const sessionId = res.data.sessionId;
       navigate(`/interview/${sessionId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Error starting session. Make sure the domain exists in the backend.');
+      const msg = err.response?.data?.error?.message || 'Error starting session. Please try again.';
+      alert(`Failed to start session: ${msg}`);
       setStarting(null);
     }
   };
 
-  const renderCard = (domain: any) => (
-    <div 
-      key={domain.id}
-      className={`rounded-xl p-6 transition-colors flex flex-col justify-between cursor-pointer group ${isDark ? 'bg-[#1a1b20] border border-white/5 hover:border-[#e8a33d]/30' : 'bg-white border border-gray-200 hover:border-[#e8a33d] shadow-sm'}`}
-      onClick={() => handleStartSession(domain.id)}
-    >
-      <div>
-        <div className={`mb-6 ${isDark ? 'text-[#d6c4b0]' : 'text-gray-600'}`}>
-          {domain.icon}
+  const renderCard = (domainItem: DomainItem) => {
+    const meta = DOMAIN_METADATA[domainItem.id] || {
+      title: domainItem.domain,
+      icon: domainItem.type === 'technical' ? <Code className="h-5 w-5" /> : <Users className="h-5 w-5" />,
+      description: `${domainItem.questionCount} scenarios tailored for your practice.`,
+    };
+
+    return (
+      <div 
+        key={domainItem.id}
+        className={`rounded-xl p-6 transition-colors flex flex-col justify-between cursor-pointer group ${isDark ? 'bg-[#1a1b20] border border-white/5 hover:border-[#e8a33d]/30' : 'bg-white border border-gray-200 hover:border-[#e8a33d] shadow-sm'}`}
+        onClick={() => handleStartSession(domainItem.id)}
+      >
+        <div>
+          <div className={`mb-6 ${isDark ? 'text-[#d6c4b0]' : 'text-gray-600'}`}>
+            {meta.icon}
+          </div>
+          <h3 className={`font-headline-md text-2xl mb-3 leading-tight ${isDark ? 'text-[#e3e1e9]' : 'text-gray-900'}`}>
+            {meta.title}
+          </h3>
+          <p className={`text-sm leading-relaxed mb-8 ${isDark ? 'text-[#d6c4b0]/70' : 'text-gray-500'}`}>
+            {meta.description}
+          </p>
         </div>
-        <h3 className={`font-headline-md text-2xl mb-3 leading-tight w-2/3 ${isDark ? 'text-[#e3e1e9]' : 'text-gray-900'}`}>
-          {domain.title}
-        </h3>
-        <p className={`text-sm leading-relaxed mb-8 ${isDark ? 'text-[#d6c4b0]/70' : 'text-gray-500'}`}>
-          {domain.description}
-        </p>
+        
+        <div className={`flex items-center text-[10px] font-bold tracking-[0.15em] uppercase transition-colors ${isDark ? 'text-[#d6c4b0] group-hover:text-[#e8a33d]' : 'text-gray-500 group-hover:text-[#e8a33d]'}`}>
+          {starting === domainItem.id ? 'Starting...' : 'Start Track'} 
+          <span className="ml-2 text-sm leading-none">→</span>
+        </div>
       </div>
-      
-      <div className={`flex items-center text-[10px] font-bold tracking-[0.15em] uppercase transition-colors ${isDark ? 'text-[#d6c4b0] group-hover:text-[#e8a33d]' : 'text-gray-500 group-hover:text-[#e8a33d]'}`}>
-        {starting === domain.id ? 'Starting...' : 'Start Track'} 
-        <span className="ml-2 text-sm leading-none">→</span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className={`animate-spin h-8 w-8 ${isDark ? 'text-[#e8a33d]' : 'text-gray-900'}`} />
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="w-full pb-10 relative">

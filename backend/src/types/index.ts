@@ -88,13 +88,16 @@ export interface QuestionBreakdown {
   questionId: string;
   questionText: string;
   contentBand: ConfidenceBand;
+  correctnessPercent: number;
   keyStrengths: string[];
   observations: string[];
+  reasoning: string;
 }
 
 // ─── Session Report ────────────────────────────────────────────────────────────
 export interface SessionReport {
   confidenceBand: ConfidenceBand;
+  overallScore: number;
   strengths: string[];
   growthAreas: string[];
   perQuestionBreakdown: QuestionBreakdown[];

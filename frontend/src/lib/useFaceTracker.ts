@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
-export function useFaceTracker(videoRef: React.RefObject<HTMLVideoElement>, isRecording: boolean) {
+export function useFaceTracker(videoRef: React.RefObject<HTMLVideoElement | null>, isRecording: boolean) {
   const [isReady, setIsReady] = useState(false);
   const landmarkerRef = useRef<FaceLandmarker | null>(null);
   

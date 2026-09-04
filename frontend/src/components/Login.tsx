@@ -26,7 +26,14 @@ export function Login() {
       await loginWithGoogle();
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
+      console.error('Google Auth Error:', err);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError('Google Sign-In is disabled in your Firebase project. Please enable "Google" under Firebase Console → Authentication → Sign-in method.');
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in window was closed before completing.');
+      } else {
+        setError(err.message || 'Failed to sign in with Google');
+      }
       setLoading(false);
     }
   };
@@ -51,13 +58,21 @@ export function Login() {
       
       navigate('/');
     } catch (err: any) {
-      // Generic error messages to prevent user enumeration
-      if (isSignUp) {
-        // For registration, show specific errors (weak password, email already in use)
-        const msg = err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, '').trim();
-        setError(msg || 'Registration failed. Please try again.');
+      console.error('Firebase Auth Error:', err);
+      const code = err.code || '';
+      
+      if (code === 'auth/operation-not-allowed') {
+        setError('Email/Password sign-in is disabled in your Firebase project. Please enable "Email/Password" in Firebase Console → Authentication → Sign-in method.');
+      } else if (code === 'auth/email-already-in-use') {
+        setError('An account with this email address already exists. Please try signing in instead.');
+      } else if (code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
+      } else if (code === 'auth/weak-password') {
+        setError('Password must be at least 6 characters long.');
+      } else if (isSignUp) {
+        const msg = err.message?.replace(/^Firebase:\s*/, '').replace(/\s*\(auth\/.*\)\.?$/, '').trim();
+        setError(msg || 'Registration failed. Please check your input and Firebase configuration.');
       } else {
-        // For login, always show generic message to prevent user enumeration
         setError('Invalid email or password. Please try again.');
       }
       setLoading(false);

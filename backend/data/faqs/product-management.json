@@ -1,0 +1,30 @@
+{
+  "domain": "Product Management",
+  "type": "technical",
+  "questions": [
+    {
+      "id": "pm-001",
+      "question": "How do you prioritize features when resources and time are limited?",
+      "ideal_answer": "Use a structured prioritization framework such as RICE (Reach, Impact, Confidence, Effort) or MoSCoW (Must-have, Should-have, Could-have, Won't-have). Align priorities with company strategic goals, user feedback, and ROI. Involve engineering and design early to estimate effort and trade-offs accurately.",
+      "key_points": [
+        "Uses established prioritization frameworks (RICE, Eisenhower, MoSCoW)",
+        "Aligns feature backlog with business goals and user impact",
+        "Collaborates with cross-functional partners (Engineering, Design)",
+        "Validates assumptions with quantitative and qualitative data",
+        "Communicates prioritization decisions transparently to stakeholders"
+      ]
+    },
+    {
+      "id": "pm-002",
+      "question": "How do you define success metrics for a new product feature?",
+      "ideal_answer": "Define primary North Star metric and supporting input metrics (adoption, engagement, retention, monetization, CSAT). Differentiate between vanity metrics and actionable metrics. Define counter-metrics to ensure the new feature doesn't harm core user experience or performance.",
+      "key_points": [
+        "Identifies North Star metric aligned with product goal",
+        "Breaks down metrics into adoption, engagement, and retention",
+        "Defines counter-metrics to monitor unintended negative impacts",
+        "Uses A/B testing or cohort analysis for measurement",
+        "Iterates based on data insights"
+      ]
+    }
+  ]
+}

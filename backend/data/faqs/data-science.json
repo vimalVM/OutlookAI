@@ -1,0 +1,42 @@
+{
+  "domain": "Data Science",
+  "type": "technical",
+  "questions": [
+    {
+      "id": "ds-001",
+      "question": "What is the difference between supervised and unsupervised learning?",
+      "ideal_answer": "Supervised learning algorithms are trained on labeled datasets where the input features and target labels are provided (e.g., classification, regression). Unsupervised learning algorithms work on unlabeled data to discover hidden patterns or groupings (e.g., clustering like K-Means, dimensionality reduction like PCA). Explain key evaluation metrics for each type.",
+      "key_points": [
+        "Distinguishes labeled vs unlabeled data",
+        "Gives clear examples for supervised (regression, classification)",
+        "Gives clear examples for unsupervised (clustering, PCA)",
+        "Mentions evaluation metrics like MSE/Accuracy vs Silhouette score",
+        "Explains real-world use cases for both"
+      ]
+    },
+    {
+      "id": "ds-002",
+      "question": "How do you handle missing data or imbalanced classes in a machine learning dataset?",
+      "ideal_answer": "For missing data, evaluate MCAR/MAR mechanisms; techniques include imputation (mean, median, KNN, MICE) or dropping rows/columns if missingness is excessive. For imbalanced classes, techniques include resampling (SMOTE, random over/undersampling), algorithm-level adjustments (class weights), and choosing appropriate metrics like F1-score or PR-AUC instead of standard accuracy.",
+      "key_points": [
+        "Distinguishes missing data techniques (imputation, dropping)",
+        "Explains imbalanced dataset challenges",
+        "Mentions SMOTE, oversampling, or weighted loss functions",
+        "Highlights why accuracy is misleading for imbalanced data",
+        "Recommends precision, recall, and F1-score"
+      ]
+    },
+    {
+      "id": "ds-003",
+      "question": "Explain overfitting vs underfitting and how to prevent them.",
+      "ideal_answer": "Overfitting occurs when a model learns noise in training data, leading to high variance and poor test generalization. Prevent it with regularization (L1/L2), cross-validation, dropout, pruning, or getting more data. Underfitting occurs when a model is too simple to capture patterns (high bias); prevent it by increasing model complexity, adding features, or training longer.",
+      "key_points": [
+        "Defines bias-variance tradeoff clearly",
+        "Explains overfitting (high variance) and underfitting (high bias)",
+        "Lists regularization techniques (L1 Lasso, L2 Ridge)",
+        "Mentions cross-validation and feature engineering",
+        "Describes practical steps to diagnose learning curves"
+      ]
+    }
+  ]
+}

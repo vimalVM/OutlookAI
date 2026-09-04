@@ -1,0 +1,18 @@
+{
+  "domain": "Conflict Resolution",
+  "type": "non_technical",
+  "questions": [
+    {
+      "id": "cr-001",
+      "question": "How do you handle a strong disagreement between two senior engineers on technical strategy?",
+      "ideal_answer": "Listen actively to both perspectives individually to understand underlying technical concerns and goals. Bring them together to focus on facts, user requirements, and system trade-offs. Use prototyping, benchmarking, or ADRs (Architecture Decision Records) to make objective decisions.",
+      "key_points": [
+        "Focuses on objective data and project goals rather than personalities",
+        "Encourages active listening and mutual respect",
+        "Uses small spikes/benchmarks to resolve technical stalemates",
+        "Documents decisions clearly with rationale (ADRs)",
+        "Ensures buy-in so the team moves forward cohesively"
+      ]
+    }
+  ]
+}

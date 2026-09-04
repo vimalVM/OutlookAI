@@ -87,24 +87,40 @@ export async function setReport(
 }
 
 export async function getCompletedByUser(uid: string): Promise<ReportSummary[]> {
+  // Use a simple single-field query to avoid requiring a composite index.
+  // Filter and sort in-memory instead.
   const snapshot = await getCollection()
     .where('uid', '==', uid)
-    .where('status', '==', 'completed')
-    .orderBy('completedAt', 'desc')
     .get();
 
-  return snapshot.docs.map((doc: any) => {
-    const data = doc.data() as SessionDocument;
-    return {
-      sessionId: doc.id,
-      domainId: data.domainId,
-      confidenceBand: data.report?.confidenceBand || 'developing',
-      completedAt: data.completedAt
-        ? (data.completedAt as any).toDate().toISOString()
-        : new Date().toISOString(),
-      questionCount: data.questions.length,
-    };
-  });
+  const completed = snapshot.docs
+    .map((doc: any) => {
+      const data = doc.data() as SessionDocument;
+      return { doc, data };
+    })
+    .filter(({ data }) => data.status === 'completed')
+    .map(({ doc, data }) => {
+      let completedAtISO: string;
+      try {
+        completedAtISO = data.completedAt && typeof (data.completedAt as any).toDate === 'function'
+          ? (data.completedAt as any).toDate().toISOString()
+          : new Date().toISOString();
+      } catch {
+        completedAtISO = new Date().toISOString();
+      }
+
+      return {
+        sessionId: doc.id,
+        domainId: data.domainId,
+        confidenceBand: data.report?.confidenceBand || 'developing',
+        completedAt: completedAtISO,
+        questionCount: data.questions.length,
+      };
+    })
+    // Sort by completedAt descending
+    .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+
+  return completed;
 }
 
 export async function updateAttempts(

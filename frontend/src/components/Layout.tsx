@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Sidebar } from './Sidebar';
-import { Loader2, Bell, Sun, Moon } from 'lucide-react';
+import { Loader2, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function Layout() {

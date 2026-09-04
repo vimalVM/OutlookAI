@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from './ui/Button';
-import { Mic, Square, Loader2, Sparkles, Video, ShieldAlert } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Mic, Square, Loader2, Sparkles, Video, ShieldAlert, Play, LogOut, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFaceTracker } from '@/lib/useFaceTracker';
 
 export function Interview() {
@@ -11,6 +11,8 @@ export function Interview() {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [started, setStarted] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   
   const [isRecording, setIsRecording] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -72,9 +74,9 @@ export function Interview() {
     (q: any) => !session.attempts.some((a: any) => a.questionId === q.faqQuestionId)
   );
 
-  // Text-to-Speech Effect
+  // Text-to-Speech Effect — only after started
   useEffect(() => {
-    if (currentQuestion && spokenQuestionIdRef.current !== currentQuestion.faqQuestionId) {
+    if (started && currentQuestion && spokenQuestionIdRef.current !== currentQuestion.faqQuestionId) {
       spokenQuestionIdRef.current = currentQuestion.faqQuestionId;
       
       // Stop any ongoing speech
@@ -86,7 +88,7 @@ export function Interview() {
       
       window.speechSynthesis.speak(utterance);
     }
-  }, [currentQuestion]);
+  }, [currentQuestion, started]);
 
   const startRecording = async () => {
     if (!streamRef.current) {
@@ -175,6 +177,20 @@ export function Interview() {
     }
   };
 
+  const handleExit = () => {
+    // Stop any recording
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+    // Stop camera
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    window.speechSynthesis.cancel();
+    navigate('/');
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>;
   }
@@ -182,9 +198,113 @@ export function Interview() {
   const answeredCount = session.attempts.length;
   const totalCount = session.questions.length;
 
+  // ─── Pre-Start Screen ──────────────────────────────────────────────────────
+  if (!started) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto text-center px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-panel p-10 rounded-2xl w-full"
+        >
+          {/* Camera preview */}
+          <div className="w-48 h-36 mx-auto rounded-xl overflow-hidden mb-8 border border-outline/20 bg-surface-container-lowest relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-surface-container-highest/90 backdrop-blur-md px-2 py-1 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[9px] font-label-caps text-green-500">LIVE</span>
+            </div>
+          </div>
+
+          <h1 className="font-headline-lg text-on-surface text-2xl mb-3">Ready to Begin?</h1>
+          <p className="text-on-surface-variant text-sm mb-2">
+            This interview contains <span className="font-semibold text-on-surface">{totalCount} questions</span> in the <span className="font-semibold text-on-surface capitalize">{session.domainId.replace(/-/g, ' ')}</span> domain.
+          </p>
+          <p className="text-on-surface-variant text-xs mb-8 max-w-sm mx-auto leading-relaxed">
+            Your camera and microphone will be active throughout. Speak clearly and maintain eye contact for the best analysis.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              className="h-12 px-8 rounded-full shadow-lg text-base"
+              onClick={() => setStarted(true)}
+              disabled={!isTrackerReady}
+            >
+              {!isTrackerReady ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Initializing Camera AI...</>
+              ) : (
+                <><Play className="h-4 w-4 mr-2" /> Begin Interview</>
+              )}
+            </Button>
+            <Button
+              variant="secondary"
+              className="h-12 px-6 rounded-full"
+              onClick={() => navigate('/')}
+            >
+              <LogOut className="h-4 w-4 mr-2" /> Go Back
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ─── Main Interview UI ────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-full max-w-6xl mx-auto py-6">
+    <div className="flex flex-col lg:flex-row gap-8 h-full max-w-6xl mx-auto py-6 relative">
       
+      {/* Exit Confirmation Modal */}
+      <AnimatePresence>
+        {showExitConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setShowExitConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-panel p-8 rounded-2xl max-w-sm w-full border border-outline/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-error/10 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-error" />
+                </div>
+                <h3 className="font-headline-md text-on-surface">Exit Interview?</h3>
+              </div>
+              <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                You've answered <span className="font-semibold text-on-surface">{answeredCount}</span> of <span className="font-semibold text-on-surface">{totalCount}</span> questions. Your progress won't be saved if you leave now.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  className="flex-1 rounded-lg"
+                  onClick={() => setShowExitConfirm(false)}
+                >
+                  Continue Interview
+                </Button>
+                <Button
+                  className="flex-1 rounded-lg bg-error hover:bg-error/90 text-on-error"
+                  onClick={handleExit}
+                >
+                  Exit
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Left Column: Chat History & Input */}
       <div className="flex-1 flex flex-col min-w-0">
         <div className="mb-6 flex items-center justify-between">
@@ -193,8 +313,17 @@ export function Interview() {
               QUESTION {answeredCount + 1} OF {totalCount}
             </div>
           </div>
-          <div className="text-sm font-code-block text-on-surface-variant">
-            SESSION: {id?.slice(0, 8)}
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-code-block text-on-surface-variant">
+              SESSION: {id?.slice(0, 8)}
+            </div>
+            <Button
+              variant="ghost"
+              className="h-8 px-3 text-xs text-error hover:bg-error/10 rounded-lg"
+              onClick={() => setShowExitConfirm(true)}
+            >
+              <LogOut className="h-3.5 w-3.5 mr-1.5" /> Exit
+            </Button>
           </div>
         </div>
 
@@ -281,35 +410,37 @@ export function Interview() {
         </div>
       </div>
 
-      {/* Right Column: Webcam Preview */}
-      <div className="w-full lg:w-80 flex flex-col gap-4">
-        <div className="glass-panel rounded-xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:flex-1 relative bg-surface-container-lowest border border-outline/20">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
+      {/* Right Column: Webcam Preview — fixed size, sticky */}
+      <div className="w-full lg:w-80 flex-shrink-0">
+        <div className="lg:sticky lg:top-6">
+          <div className="glass-panel rounded-xl overflow-hidden relative bg-surface-container-lowest border border-outline/20" style={{ height: '320px' }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
           
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-outline/20">
-            <Video className="h-3 w-3 text-secondary" />
-            <span className="text-xs font-label-caps text-secondary">ACTIVE</span>
-          </div>
-
-          {isRecording && (
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-error/50">
-              <div className="w-2 h-2 rounded-full bg-error animate-pulse" />
-              <span className="text-xs font-label-caps text-error">REC</span>
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-outline/20">
+              <Video className="h-3 w-3 text-secondary" />
+              <span className="text-xs font-label-caps text-secondary">ACTIVE</span>
             </div>
-          )}
+
+            {isRecording && (
+              <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-error/50">
+                <div className="w-2 h-2 rounded-full bg-error animate-pulse" />
+                <span className="text-xs font-label-caps text-error">REC</span>
+              </div>
+            )}
           
-          {/* Notice to user that camera is enforced */}
-          <div className="absolute bottom-0 left-0 right-0 bg-surface-container-highest/95 border-t border-outline/20 p-3 flex items-start gap-3">
-             <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-             <p className="text-xs font-body-sm text-on-surface-variant leading-tight">
-               Camera is required and locked on during the interview for behavioral analysis.
-             </p>
+            {/* Notice to user that camera is enforced */}
+            <div className="absolute bottom-0 left-0 right-0 bg-surface-container-highest/95 border-t border-outline/20 p-3 flex items-start gap-3">
+               <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+               <p className="text-xs font-body-sm text-on-surface-variant leading-tight">
+                 Camera is required and locked on during the interview for behavioral analysis.
+               </p>
+            </div>
           </div>
         </div>
       </div>

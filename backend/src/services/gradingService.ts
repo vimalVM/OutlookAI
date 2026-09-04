@@ -50,7 +50,7 @@ Return ONLY valid JSON, no markdown fences, no preamble.`;
 
   try {
     const completion = await groq.chat.completions.create({
-      model: 'llama-4-scout',
+      model: 'qwen/qwen3.6-27b',
       messages: [
         { role: 'system', content: 'You are a precise JSON-outputting interview evaluator. Output only valid JSON.' },
         { role: 'user', content: prompt },
@@ -61,10 +61,14 @@ Return ONLY valid JSON, no markdown fences, no preamble.`;
 
     const raw = completion.choices[0]?.message?.content?.trim() || '';
 
-    // Parse JSON response — strip any markdown fences if present
-    const jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    // Strip Qwen3 thinking tags and markdown fences
+    const cleaned = raw
+      .replace(/<think>[\s\S]*?<\/think>/g, '')
+      .replace(/```json\s*/g, '')
+      .replace(/```\s*/g, '')
+      .trim();
 
-    const parsed = JSON.parse(jsonStr);
+    const parsed = JSON.parse(cleaned);
 
     const validBands: ConfidenceBand[] = ['developing', 'comfortable', 'strong'];
     const band: ConfidenceBand = validBands.includes(parsed.band) ? parsed.band : 'developing';

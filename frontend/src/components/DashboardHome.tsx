@@ -30,6 +30,7 @@ export function DashboardHome() {
   }
 
   const strongMatches = sessions.filter(s => s.confidenceBand === 'strong').length;
+  const passingMatches = sessions.filter(s => s.confidenceBand === 'strong' || s.confidenceBand === 'comfortable').length;
   const recentSessions = sessions.slice(0, 3);
 
   return (
@@ -66,7 +67,7 @@ export function DashboardHome() {
             <Activity className={`h-4 w-4 ${isDark ? 'text-[#ffb956]' : 'text-orange-500'}`} />
           </div>
           <div className={`text-4xl font-headline-md ${isDark ? 'text-[#e3e1e9]' : 'text-gray-900'}`}>
-            {sessions.length > 0 ? Math.round((strongMatches / sessions.length) * 100) : 0}%
+            {sessions.length > 0 ? Math.round((passingMatches / sessions.length) * 100) : 0}%
           </div>
           <p className={`text-xs mt-2 ${isDark ? 'text-[#d6c4b0]/70' : 'text-gray-500'}`}>Overall pass rate</p>
         </div>

@@ -1,0 +1,18 @@
+{
+  "domain": "Negotiation",
+  "type": "non_technical",
+  "questions": [
+    {
+      "id": "ng-001",
+      "question": "How do you negotiate project timelines when stakeholders demand earlier completion dates?",
+      "ideal_answer": "Acknowledge the stakeholder's business drivers first. Present clear trade-off choices using the iron triangle (Scope, Cost/Resources, Time). Propose phased delivery where high-value features launch early, followed by iterative releases, ensuring quality is not compromised.",
+      "key_points": [
+        "Demonstrates empathy for business drivers and deadlines",
+        "Uses the Iron Triangle (Time, Scope, Quality/Cost) to explain trade-offs",
+        "Offers creative solutions like phased delivery or scope reduction",
+        "Protects technical quality and avoids burnout",
+        "Secures formal alignment on agreed scope"
+      ]
+    }
+  ]
+}

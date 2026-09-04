@@ -14,7 +14,7 @@ import * as gradingService from '../services/gradingService';
 import * as fusionService from '../services/fusionService';
 import * as faqRepository from '../repositories/faqRepository';
 import { logger } from '../middleware/requestLogger';
-import * as admin from 'firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export default function createSessionRoutes(): Router {
 const router = Router();
@@ -72,7 +72,7 @@ router.post(
         questions,
         attempts: [],
         report: null,
-        startedAt: admin.firestore.FieldValue.serverTimestamp(),
+        startedAt: FieldValue.serverTimestamp(),
         completedAt: null,
       });
 

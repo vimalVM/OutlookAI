@@ -1,0 +1,18 @@
+{
+  "domain": "First-time Manager",
+  "type": "non_technical",
+  "questions": [
+    {
+      "id": "fm-001",
+      "question": "How do you transition from an individual contributor (IC) to a team manager?",
+      "ideal_answer": "Shift focus from personal output to empowering the team and driving collective success. Delegate effectively, establish regular 1-on-1s, provide constructive feedback, build trust, and advocate for team members' career development while stepping back from micromanaging code.",
+      "key_points": [
+        "Shifts mindset from individual execution to team enablement",
+        "Establishes structured 1-on-1s and clear communication",
+        "Delegates responsibilities with appropriate autonomy",
+        "Focuses on career growth, mentoring, and psychological safety",
+        "Manages up and down effectively"
+      ]
+    }
+  ]
+}

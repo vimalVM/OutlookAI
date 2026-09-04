@@ -57,7 +57,7 @@ async function rephraseQuestion(faq: FaqQuestion): Promise<string> {
   const groq = getGroq();
 
   const completion = await groq.chat.completions.create({
-    model: 'llama-4-scout',
+    model: 'qwen/qwen3.6-27b',
     messages: [
       {
         role: 'system',
@@ -74,7 +74,9 @@ Return ONLY the rephrased question — no preamble, no explanation, no quotation
     max_tokens: 200,
   });
 
-  const rephrased = completion.choices[0]?.message?.content?.trim();
+  const raw = completion.choices[0]?.message?.content?.trim() || '';
+  // Strip Qwen3 thinking tags
+  const rephrased = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
   if (!rephrased) {
     logger.warn({ questionId: faq.id }, 'Empty rephrase result, using original');

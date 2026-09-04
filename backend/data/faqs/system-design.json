@@ -1,0 +1,42 @@
+{
+  "domain": "System Design",
+  "type": "technical",
+  "questions": [
+    {
+      "id": "sd-001",
+      "question": "How would you design a scalable URL shortener like Bitly?",
+      "ideal_answer": "Start with scope and scale estimations (QPS, storage). Design API endpoints (shorten URL, redirect). Pick base62 encoding or MD5/SHA256 hashing with auto-increment ID generator for unique short keys. Choose a NoSQL key-value store (e.g. Cassandra or DynamoDB) or Redis cache for low-latency lookups. Discuss CDN caching, database sharding, and high availability.",
+      "key_points": [
+        "Defines functional and non-functional requirements",
+        "Calculates traffic (QPS) and storage estimates",
+        "Explains short URL generation algorithm (Base62 / Hashing)",
+        "Chooses database & caching strategy (Redis, Key-Value store)",
+        "Addresses scalability, fault tolerance, and load balancing"
+      ]
+    },
+    {
+      "id": "sd-002",
+      "question": "Explain SQL vs NoSQL databases and when you would choose each.",
+      "ideal_answer": "SQL databases (PostgreSQL, MySQL) are relational, schema-enforced, and ACID compliant — ideal for structured data, transactions, and complex joins (financial systems, user accounts). NoSQL databases (MongoDB, Cassandra, Redis) are document/key-value/columnar, offer horizontal scaling, flexible schemas, and high throughput — ideal for unstructured data, real-time analytics, and high write volume.",
+      "key_points": [
+        "Compares relational ACID compliance vs NoSQL eventual consistency",
+        "Explains horizontal vs vertical scaling capabilities",
+        "Gives concrete use cases for SQL (e-commerce transactions, financial data)",
+        "Gives concrete use cases for NoSQL (caching, logging, social feeds)",
+        "Discusses trade-offs like query flexibility vs write throughput"
+      ]
+    },
+    {
+      "id": "sd-003",
+      "question": "What is the CAP Theorem and how does it influence distributed database selection?",
+      "ideal_answer": "The CAP theorem states that a distributed data store can simultaneously provide at most two out of three guarantees: Consistency (all nodes see the same data at the same time), Availability (every request receives a response), and Partition Tolerance (system operates despite network partitions). Since network partitions (P) are inevitable in distributed systems, design choices boil down to CP (e.g. HBase, MongoDB) vs AP (e.g. Cassandra, DynamoDB).",
+      "key_points": [
+        "Clearly defines Consistency, Availability, and Partition Tolerance",
+        "Explains why Partition Tolerance is mandatory in distributed networks",
+        "Contrasts CP systems (strong consistency) vs AP systems (eventual consistency)",
+        "Provides real-world database examples for CP and AP choices",
+        "Mentions eventual consistency patterns like vector clocks or gossip protocols"
+      ]
+    }
+  ]
+}

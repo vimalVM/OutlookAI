@@ -172,19 +172,30 @@ function buildPerQuestionBreakdown(
     const sessionQ = questions.find((q) => q.faqQuestionId === attempt.questionId);
     const faqQ = faqRepository.getQuestion(domainId, attempt.questionId);
 
+    // Compute correctness percentage from key points
+    const totalKeyPoints = faqQ ? faqQ.key_points.length : 1;
+    const coveredCount = attempt.contentGrading.keyPointsCovered.length;
+    const correctnessPercent = Math.round((coveredCount / Math.max(totalKeyPoints, 1)) * 100);
+
     const breakdown: QuestionBreakdown = {
       questionId: attempt.questionId,
       questionText: sessionQ?.rephrasedText || faqQ?.question || 'Unknown question',
       contentBand: attempt.contentGrading.band,
+      correctnessPercent,
       keyStrengths: [],
       observations: [],
+      reasoning: attempt.contentGrading.reasoning || '',
     };
 
     // Key strengths for this question
     if (attempt.contentGrading.keyPointsCovered.length > 0) {
       breakdown.keyStrengths.push(
-        `Covered ${attempt.contentGrading.keyPointsCovered.length} key points effectively`
+        `Covered ${attempt.contentGrading.keyPointsCovered.length} of ${totalKeyPoints} key points`
       );
+      // Include which points were covered
+      attempt.contentGrading.keyPointsCovered.slice(0, 3).forEach((pt) => {
+        breakdown.keyStrengths.push(pt);
+      });
     }
 
     if (attempt.disfluencyMetrics.disfluencyRate < 0.05) {
@@ -223,7 +234,15 @@ export function generateReport(
     'Generating fusion report'
   );
 
-  // 1. Overall confidence band — aggregate content grading across all attempts
+  // 1. Build per-question breakdown first (we need scores from it)
+  const perQuestionBreakdown = buildPerQuestionBreakdown(attempts, questions, domainId);
+
+  // 2. Overall score — average of per-question correctness percentages
+  const overallScore = perQuestionBreakdown.length > 0
+    ? Math.round(perQuestionBreakdown.reduce((sum, q) => sum + q.correctnessPercent, 0) / perQuestionBreakdown.length)
+    : 0;
+
+  // 3. Overall confidence band — aggregate content grading across all attempts
   const contentValues = attempts.map((a) => BAND_VALUES[a.contentGrading.band]);
   const avgContentValue =
     contentValues.length > 0
@@ -240,21 +259,19 @@ export function generateReport(
   const overallValue = Math.max(1, Math.min(3, avgContentValue + deliveryModifier));
   const confidenceBand = valueToBand(overallValue);
 
-  // 2. Strengths (lead with these)
+  // 4. Strengths (lead with these)
   const strengths = generateStrengths(attempts);
 
-  // 3. Growth areas (observations, never negative)
+  // 5. Growth areas (observations, never negative)
   const growthAreas = generateGrowthAreas(attempts);
 
-  // 4. Per-question breakdown
-  const perQuestionBreakdown = buildPerQuestionBreakdown(attempts, questions, domainId);
-
-  // 5. Delivery pattern flag (soft signal, neutral text)
+  // 6. Delivery pattern flag (soft signal, neutral text)
   const { flag: deliveryPatternFlag, note: deliveryPatternNote } =
     detectDeliveryPatternFlag(attempts);
 
   const report: SessionReport = {
     confidenceBand,
+    overallScore,
     strengths,
     growthAreas,
     perQuestionBreakdown,
@@ -263,7 +280,7 @@ export function generateReport(
   };
 
   logger.info(
-    { confidenceBand, strengthCount: strengths.length, growthAreaCount: growthAreas.length },
+    { confidenceBand, overallScore, strengthCount: strengths.length, growthAreaCount: growthAreas.length },
     'Report generated'
   );
 
