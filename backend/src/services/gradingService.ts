@@ -50,7 +50,7 @@ Return ONLY valid JSON, no markdown fences, no preamble.`;
 
   try {
     const completion = await groq.chat.completions.create({
-      model: 'qwen/qwen3.6-27b',
+      model: 'qwen/qwen3.8-27b',
       messages: [
         { role: 'system', content: 'You are a precise JSON-outputting interview evaluator. Output only valid JSON.' },
         { role: 'user', content: prompt },

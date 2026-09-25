@@ -19,16 +19,17 @@ import { FieldValue } from 'firebase-admin/firestore';
 export default function createSessionRoutes(): Router {
 const router = Router();
 
-// Multer for audio upload — 10MB limit, restricted to audio/video types
+// Multer for audio upload — 25MB limit, restricted to audio/video types
 const ALLOWED_MIMETYPES = new Set([
   'audio/webm', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/mpeg',
   'video/webm', 'video/mp4',
 ]);
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (ALLOWED_MIMETYPES.has(file.mimetype)) {
+    const baseMime = file.mimetype ? file.mimetype.split(';')[0].trim().toLowerCase() : '';
+    if (ALLOWED_MIMETYPES.has(baseMime) || ALLOWED_MIMETYPES.has(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new ValidationError(`Unsupported file type: ${file.mimetype}. Only audio/video files are accepted.`) as any);

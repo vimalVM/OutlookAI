@@ -54,44 +54,62 @@ export function useFaceTracker(videoRef: React.RefObject<HTMLVideoElement | null
     
     let animationFrameId: number;
     let lastVideoTime = -1;
+    let consecutiveErrors = 0;
     
     const track = () => {
-      if (videoRef.current && videoRef.current.currentTime !== lastVideoTime) {
-        lastVideoTime = videoRef.current.currentTime;
+      const video = videoRef.current;
+      if (
+        video &&
+        video.readyState >= 2 && // HTMLMediaElement.HAVE_CURRENT_DATA
+        video.videoWidth > 0 &&
+        video.videoHeight > 0 &&
+        !video.paused &&
+        !video.ended &&
+        video.currentTime !== lastVideoTime &&
+        consecutiveErrors < 10
+      ) {
+        lastVideoTime = video.currentTime;
         
         try {
-          const results = landmarkerRef.current?.detectForVideo(videoRef.current, performance.now());
-          metricsRef.current.totalFrames++;
-          
-          if (results && results.faceLandmarks.length > 0) {
-            metricsRef.current.facesDetected++;
+          if (landmarkerRef.current) {
+            const results = landmarkerRef.current.detectForVideo(video, performance.now());
+            metricsRef.current.totalFrames++;
+            consecutiveErrors = 0;
             
-            // Check facial transformation matrix for head pose (looking down/away)
-            if (results.facialTransformationMatrixes && results.facialTransformationMatrixes.length > 0) {
-              const matrix = results.facialTransformationMatrixes[0].data;
-              // Extract basic pitch and yaw from the rotation matrix
-              const pitch = Math.asin(-matrix[6]); // Approx pitch
-              const yaw = Math.atan2(matrix[2], matrix[10]); // Approx yaw
+            if (results && results.faceLandmarks && results.faceLandmarks.length > 0) {
+              metricsRef.current.facesDetected++;
               
-              // If pitch is significantly downward (reading phone) or yaw is away
-              if (pitch < -0.2 || Math.abs(yaw) > 0.3) {
-                metricsRef.current.lookingAwayFrames++;
+              // Check facial transformation matrix for head pose (looking down/away)
+              if (results.facialTransformationMatrixes && results.facialTransformationMatrixes.length > 0) {
+                const matrix = results.facialTransformationMatrixes[0].data;
+                // Extract basic pitch and yaw from the rotation matrix
+                const pitch = Math.asin(-matrix[6]); // Approx pitch
+                const yaw = Math.atan2(matrix[2], matrix[10]); // Approx yaw
+                
+                // If pitch is significantly downward (reading phone) or yaw is away
+                if (pitch < -0.2 || Math.abs(yaw) > 0.3) {
+                  metricsRef.current.lookingAwayFrames++;
+                }
+                
+                // Fidgeting (rapid head movement)
+                const pitchDelta = Math.abs(pitch - metricsRef.current.lastPitch);
+                const yawDelta = Math.abs(yaw - metricsRef.current.lastYaw);
+                
+                if (pitchDelta > 0.08 || yawDelta > 0.08) {
+                  metricsRef.current.fidgetCount++;
+                }
+                
+                metricsRef.current.lastPitch = pitch;
+                metricsRef.current.lastYaw = yaw;
               }
-              
-              // Fidgeting (rapid head movement)
-              const pitchDelta = Math.abs(pitch - metricsRef.current.lastPitch);
-              const yawDelta = Math.abs(yaw - metricsRef.current.lastYaw);
-              
-              if (pitchDelta > 0.08 || yawDelta > 0.08) {
-                metricsRef.current.fidgetCount++;
-              }
-              
-              metricsRef.current.lastPitch = pitch;
-              metricsRef.current.lastYaw = yaw;
             }
           }
         } catch (err) {
-          // Ignore occasional processing errors
+          consecutiveErrors++;
+          // Safe catch to prevent crashing requestAnimationFrame loop
+          if (consecutiveErrors <= 2) {
+            console.debug("Face landmark tracking frame skipped:", err);
+          }
         }
       }
       animationFrameId = requestAnimationFrame(track);

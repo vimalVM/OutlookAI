@@ -16,16 +16,40 @@ export function Interview() {
   
   const [isRecording, setIsRecording] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const isRecordingRef = useRef(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
   
   // Track spoken question to avoid re-speaking on every render
   const spokenQuestionIdRef = useRef<string | null>(null);
 
   const { isReady: isTrackerReady, getMetricsAndReset } = useFaceTracker(videoRef, isRecording);
+
+  // Auto-scroll chat when speech or submitting status updates
+  useEffect(() => {
+    if (isRecording || submitting) {
+      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [liveTranscript, isRecording, submitting]);
+
+  // Callback ref to attach the media stream whenever any video element mounts
+  const attachVideoRef = (element: HTMLVideoElement | null) => {
+    (videoRef as any).current = element;
+    if (element && streamRef.current) {
+      if (element.srcObject !== streamRef.current) {
+        element.srcObject = streamRef.current;
+      }
+      element.play().catch(err => {
+        console.debug('Autoplay notice:', err);
+      });
+    }
+  };
 
   useEffect(() => {
     fetchSession();
@@ -41,6 +65,16 @@ export function Interview() {
       window.speechSynthesis.cancel();
     };
   }, [id]);
+
+  // Ensure video element receives stream when transitioning between pre-start and active states
+  useEffect(() => {
+    if (videoRef.current && streamRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+      }
+      videoRef.current.play().catch(err => console.debug('Autoplay notice:', err));
+    }
+  }, [started]);
 
   const fetchSession = async () => {
     try {
@@ -59,10 +93,14 @@ export function Interview() {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        audio: true,
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(err => console.debug('Autoplay notice:', err));
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
@@ -97,7 +135,22 @@ export function Interview() {
     }
 
     try {
-      const mediaRecorder = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' });
+      // Record ONLY the audio track to keep file size compact (<1MB) and prevent hitting upload limits
+      const audioTracks = streamRef.current.getAudioTracks();
+      if (audioTracks.length === 0) {
+        alert("Microphone track is not available. Please check microphone permissions.");
+        return;
+      }
+      const audioStream = new MediaStream(audioTracks);
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : '';
+
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(audioStream, options);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -110,8 +163,46 @@ export function Interview() {
       // Stop speech synthesis if the user interrupts
       window.speechSynthesis.cancel();
 
-      mediaRecorder.start();
+      mediaRecorder.start(1000);
       setIsRecording(true);
+      isRecordingRef.current = true;
+      setLiveTranscript('');
+
+      // Start Web Speech API for real-time live transcription
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+
+          recognition.onresult = (event: any) => {
+            let fullTranscript = '';
+            for (let i = 0; i < event.results.length; i++) {
+              fullTranscript += event.results[i][0].transcript + ' ';
+            }
+            setLiveTranscript(fullTranscript.trim());
+          };
+
+          recognition.onerror = (event: any) => {
+            console.debug('Speech recognition event:', event.error);
+          };
+
+          recognition.onend = () => {
+            if (isRecordingRef.current) {
+              try {
+                recognition.start();
+              } catch (e) {}
+            }
+          };
+
+          recognition.start();
+          recognitionRef.current = recognition;
+        } catch (e) {
+          console.debug('Speech recognition initialization error:', e);
+        }
+      }
     } catch (err) {
       console.error('Error starting media recorder:', err);
       alert('Failed to start recording.');
@@ -119,11 +210,20 @@ export function Interview() {
   };
 
   const stopRecordingAndSubmit = () => {
+    isRecordingRef.current = false;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+
     if (!mediaRecorderRef.current) return;
     
     mediaRecorderRef.current.onstop = async () => {
-      const mediaBlob = new Blob(chunksRef.current, { type: 'video/webm' });
-      await submitAnswer(mediaBlob);
+      const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
+      const audioBlob = new Blob(chunksRef.current, { type: mimeType });
+      await submitAnswer(audioBlob);
     };
     
     mediaRecorderRef.current.stop();
@@ -140,7 +240,8 @@ export function Interview() {
     if (!unansweredQuestion) return;
 
     formData.append('questionId', unansweredQuestion.faqQuestionId);
-    formData.append('audioBlob', mediaBlob, 'answer.webm');
+    const filename = mediaBlob.type.includes('mp4') ? 'answer.mp4' : 'answer.webm';
+    formData.append('audioBlob', mediaBlob, filename);
     
     // Retrieve real metrics computed by MediaPipe FaceLandmarker
     const visualMetrics = getMetricsAndReset();
@@ -165,6 +266,7 @@ export function Interview() {
 
     try {
       const res = await api.post(`/sessions/${id}/answers`, formData);
+      setLiveTranscript('');
       if (res.data.sessionComplete) {
         navigate(`/report/${id}`);
       } else {
@@ -178,6 +280,13 @@ export function Interview() {
   };
 
   const handleExit = () => {
+    isRecordingRef.current = false;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
     // Stop any recording
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
@@ -210,11 +319,11 @@ export function Interview() {
           {/* Camera preview */}
           <div className="w-48 h-36 mx-auto rounded-xl overflow-hidden mb-8 border border-outline/20 bg-surface-container-lowest relative">
             <video
-              ref={videoRef}
+              ref={attachVideoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover -scale-x-100"
             />
             <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-surface-container-highest/90 backdrop-blur-md px-2 py-1 rounded-full">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -371,16 +480,57 @@ export function Interview() {
               </motion.div>
             )}
 
+            {/* Live Transcription Bubble */}
+            {isRecording && (
+              <motion.div 
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="glass-panel p-6 rounded-xl rounded-tr-sm border-2 border-primary/40 bg-surface-tint/10 ml-8 shadow-lg relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-3 border-b border-primary/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span>
+                    </span>
+                    <span className="font-label-caps text-primary font-bold text-xs tracking-wider">YOU (LIVE TRANSCRIPT)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-error/10 border border-error/20 px-2.5 py-1 rounded-full">
+                    <div className="flex items-center gap-0.5 h-3">
+                      <span className="w-0.5 h-2 bg-error rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-0.5 h-3 bg-error rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-0.5 h-2 bg-error rounded-full animate-bounce" />
+                    </div>
+                    <span className="text-[10px] font-mono text-error font-medium uppercase tracking-tight">Listening...</span>
+                  </div>
+                </div>
+                
+                {liveTranscript ? (
+                  <div className="font-body-md text-on-surface leading-relaxed text-base">
+                    <span>{liveTranscript}</span>
+                    <span className="inline-block w-2 h-4 ml-1.5 bg-primary animate-pulse align-middle rounded-sm" />
+                  </div>
+                ) : (
+                  <div className="font-body-md text-on-surface-variant/80 italic flex items-center gap-2 py-1">
+                    <Mic className="h-4 w-4 text-primary animate-pulse shrink-0" />
+                    <span>Speak now — your response is being transcribed live...</span>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
             {submitting && (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="glass-panel p-6 rounded-xl rounded-tr-sm border-primary/20 bg-surface-tint/5 ml-12 flex items-center justify-center gap-4"
+                className="glass-panel p-6 rounded-xl rounded-tr-sm border-primary/20 bg-surface-tint/5 ml-8 flex items-center justify-center gap-4"
               >
                 <Loader2 className="animate-spin h-6 w-6 text-primary" />
                 <span className="text-on-surface-variant text-base font-medium">Analyzing response and generating feedback...</span>
               </motion.div>
             )}
+
+            <div ref={chatBottomRef} />
           </div>
 
           {/* Input Area */}
@@ -415,11 +565,11 @@ export function Interview() {
         <div className="lg:sticky lg:top-6">
           <div className="glass-panel rounded-xl overflow-hidden relative bg-surface-container-lowest border border-outline/20" style={{ height: '320px' }}>
             <video
-              ref={videoRef}
+              ref={attachVideoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover -scale-x-100"
             />
           
             <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-outline/20">
@@ -429,8 +579,12 @@ export function Interview() {
 
             {isRecording && (
               <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-surface-container-highest/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-error/50">
-                <div className="w-2 h-2 rounded-full bg-error animate-pulse" />
-                <span className="text-xs font-label-caps text-error">REC</span>
+                <div className="flex items-center gap-0.5 h-3">
+                  <span className="w-0.5 h-2 bg-error rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-0.5 h-3 bg-error rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-0.5 h-2 bg-error rounded-full animate-bounce" />
+                </div>
+                <span className="text-xs font-label-caps text-error">REC • LIVE</span>
               </div>
             )}
           

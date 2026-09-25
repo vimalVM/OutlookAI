@@ -78,6 +78,19 @@ export function errorHandler(
     return;
   }
 
+  if (err.name === 'MulterError') {
+    const isFileSize = (err as any).code === 'LIMIT_FILE_SIZE';
+    const statusCode = isFileSize ? 413 : 400;
+    logger.warn({ err, requestId }, `[MulterError] ${err.message}`);
+    res.status(statusCode).json({
+      error: {
+        code: (err as any).code || 'UPLOAD_ERROR',
+        message: isFileSize ? 'Audio file exceeds size limit' : err.message,
+      },
+    });
+    return;
+  }
+
   // Unexpected errors — never expose internals
   logger.error(
     { err, requestId },
